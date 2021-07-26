@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	http "net/http"
+
+	"github.com/tobgu/qframe"
+)
 
 func main() {
-	fmt.Println("hello world")
+	resp, err := http.Get("https://wiski.tirol.gv.at/hydro/ogd/OGD_W.csv")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	f := qframe.ReadCSV(resp.Body)
+	fmt.Println(f)
+
+	defer resp.Body.Close()
 }
