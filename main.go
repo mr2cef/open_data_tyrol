@@ -4,57 +4,38 @@ import (
 	"fmt"
 	http "net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/mr2cef/open_data_tyrol/sources/common"
+	"github.com/mr2cef/open_data_tyrol/sources/tirPeg"
+	"github.com/mr2cef/open_data_tyrol/sources/tirPrec"
+	"github.com/mr2cef/open_data_tyrol/sources/tirTemp"
 	"github.com/tobgu/qframe"
 	"github.com/tobgu/qframe/config/csv"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
-func main() {
-
-	godotenv.Load(".env")
-
-	resp, err := http.Get("https://wiski.tirol.gv.at/hydro/ogd/OGD_W.csv")
+func getDataPts(s common.Source, ptsc chan *write.Point, wg *sync.WaitGroup) {
+	defer wg.Done()
+	resp, err := http.Get(s.Url)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	dtypes := map[string]string{
-		"Stationsname":           "string",
-		"Stationsnummer":         "string",
-		"Gew�sser":               "string",
-		"Parameter":              "string",
-		"Zeitstempel in ISO8601": "string",
-		"Wert":                   "float",
-		"Einheit":                "string",
-		"Seeh�he":                "float",
-		"Rechtswert":             "float",
-		"Hochwert":               "float",
-		"EPSG-Code":              "string",
-	}
-
-	df := qframe.ReadCSV(resp.Body, csv.Delimiter(';'), csv.Types(dtypes))
+	df := qframe.ReadCSV(resp.Body, csv.Delimiter(s.Delimiter), csv.Types(s.Dtypes))
 	defer resp.Body.Close()
-
-	// Create a new client using an InfluxDB server base URL and an authentication token
-	// and set batch size to 20
-	client := influxdb2.NewClientWithOptions(os.Getenv("INFLUX_DB_HOST"), os.Getenv("INFLUX_DB_TOCKEN"),
-		influxdb2.DefaultOptions().SetBatchSize(1000))
-	// Get non-blocking write client
-	writeAPI := client.WriteAPI(os.Getenv("INFLUX_DB_ORG"), "pegel")
-
-	value := df.MustFloatView("Wert")
-	datetime, _ := df.StringView("Zeitstempel in ISO8601")
-	station, _ := df.StringView("Stationsnummer")
+	value := df.MustFloatView(s.ValCol)
+	datetime, _ := df.StringView(s.TimeCol)
+	station, _ := df.StringView(s.IdCol)
 	for i := 0; i < df.Len(); i++ {
-		layout := "2006-01-02T15:04:05-0700"
-		t, _ := time.Parse(layout, *datetime.ItemAt(i))
+		t, _ := time.Parse(s.TimeFmt, *datetime.ItemAt(i))
 		value := value.ItemAt(i)
-		if value >= 0 {
+		if (value >= s.ValMin) && (value <= s.ValMax) {
 			p := influxdb2.NewPoint(
-				"system",
+				s.Measurement,
 				map[string]string{
 					"stationId": *station.ItemAt(i),
 				},
@@ -62,12 +43,47 @@ func main() {
 					"value": value,
 				},
 				t)
-			writeAPI.WritePoint(p)
+			ptsc <- p
 		}
 	}
-	// Force all unwritten data to be sent
-	writeAPI.Flush()
-	// Ensures background processes finishes
-	client.Close()
+}
 
+func writeDb(ptsc chan *write.Point, donec chan bool) {
+	// Create a new client using an InfluxDB server base URL and an authentication token
+	// and set batch size to 20
+	client := influxdb2.NewClientWithOptions(
+		os.Getenv("INFLUX_DB_HOST"),
+		os.Getenv("INFLUX_DB_TOCKEN"),
+		influxdb2.DefaultOptions().SetBatchSize(1000))
+	// Ensures background processes finishes
+	defer client.Close()
+	// Get non-blocking write client
+	writeAPI := client.WriteAPI(
+		os.Getenv("INFLUX_DB_ORG"),
+		"pegel")
+	// Force all unwritten data to be sent
+	defer writeAPI.Flush()
+	for p := range ptsc {
+		writeAPI.WritePoint(p)
+	}
+	donec <- true
+}
+
+func main() {
+
+	godotenv.Load(".env")
+
+	ptsc := make(chan *write.Point, 10000)
+	donec := make(chan bool)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go getDataPts(tirPeg.GetSource(), ptsc, &wg)
+	wg.Add(1)
+	go getDataPts(tirPrec.GetSource(), ptsc, &wg)
+	wg.Add(1)
+	go getDataPts(tirTemp.GetSource(), ptsc, &wg)
+
+	go writeDb(ptsc, donec)
+	wg.Wait()
+	close(ptsc)
 }
