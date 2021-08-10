@@ -49,6 +49,11 @@ func getDataPts(s common.Source, ptsc chan *write.Point, wg *sync.WaitGroup) {
 }
 
 func writeDb(ptsc chan *write.Point, donec chan bool) {
+	i := 0
+	defer func() {
+		fmt.Println("Done. ", i, " points written.")
+		donec <- true
+	}()
 	// Create a new client using an InfluxDB server base URL and an authentication token
 	// and set batch size to 20
 	client := influxdb2.NewClientWithOptions(
@@ -65,8 +70,8 @@ func writeDb(ptsc chan *write.Point, donec chan bool) {
 	defer writeAPI.Flush()
 	for p := range ptsc {
 		writeAPI.WritePoint(p)
+		i++
 	}
-	donec <- true
 }
 
 func main() {
