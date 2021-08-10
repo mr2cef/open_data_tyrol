@@ -91,4 +91,5 @@ func main() {
 	go writeDb(ptsc, donec)
 	wg.Wait()
 	close(ptsc)
+	<-donec
 }
