@@ -28,10 +28,19 @@ func getDataPts(s common.Source, ptsc chan *write.Point, wg *sync.WaitGroup) {
 	df := qframe.ReadCSV(resp.Body, csv.Delimiter(s.Delimiter), csv.Types(s.Dtypes))
 	defer resp.Body.Close()
 	value := df.MustFloatView(s.ValCol)
-	datetime, _ := df.StringView(s.TimeCol)
-	station, _ := df.StringView(s.IdCol)
+	datetime, err := df.StringView(s.TimeCol)
+	if err != nil {
+		// TODO
+	}
+	station, err := df.StringView(s.IdCol)
+	if err != nil {
+		// TODO
+	}
 	for i := 0; i < df.Len(); i++ {
-		t, _ := time.Parse(s.TimeFmt, *datetime.ItemAt(i))
+		t, err := time.Parse(s.TimeFmt, *datetime.ItemAt(i))
+		if err != nil {
+			// TODO
+		}
 		value := value.ItemAt(i)
 		if (value >= s.ValMin) && (value <= s.ValMax) {
 			p := influxdb2.NewPoint(
@@ -51,7 +60,7 @@ func getDataPts(s common.Source, ptsc chan *write.Point, wg *sync.WaitGroup) {
 func writeDb(ptsc chan *write.Point, donec chan bool) {
 	i := 0
 	defer func() {
-		fmt.Println("Done. ", i, " points written.")
+		fmt.Println("Done.", i, "points written.")
 		donec <- true
 	}()
 	// Create a new client using an InfluxDB server base URL and an authentication token
@@ -59,7 +68,8 @@ func writeDb(ptsc chan *write.Point, donec chan bool) {
 	client := influxdb2.NewClientWithOptions(
 		os.Getenv("INFLUX_DB_HOST"),
 		os.Getenv("INFLUX_DB_TOCKEN"),
-		influxdb2.DefaultOptions().SetBatchSize(1000))
+		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Minute),
+	)
 	// Ensures background processes finishes
 	defer client.Close()
 	// Get non-blocking write client
@@ -80,16 +90,18 @@ func main() {
 
 	ptsc := make(chan *write.Point, 10000)
 	donec := make(chan bool)
+	defer func() {
+		<-donec
+	}()
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go getDataPts(tirPeg.GetSource(), ptsc, &wg)
-	wg.Add(1)
-	go getDataPts(tirPrec.GetSource(), ptsc, &wg)
-	wg.Add(1)
-	go getDataPts(tirTemp.GetSource(), ptsc, &wg)
+	sources := []common.Source{tirPeg.GetSource(), tirPrec.GetSource(), tirTemp.GetSource()}
 
+	for _, s := range sources {
+		wg.Add(1)
+		go getDataPts(s, ptsc, &wg)
+	}
 	go writeDb(ptsc, donec)
 	wg.Wait()
+
 	close(ptsc)
-	<-donec
 }
