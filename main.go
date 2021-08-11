@@ -46,7 +46,7 @@ func getDataPts(s common.Source, ptsc chan *write.Point, wg *sync.WaitGroup) {
 			p := influxdb2.NewPoint(
 				s.Measurement,
 				map[string]string{
-					"stationId": *station.ItemAt(i),
+					"stationId": (s.Prefix + *station.ItemAt(i)),
 				},
 				map[string]interface{}{
 					"value": value,
