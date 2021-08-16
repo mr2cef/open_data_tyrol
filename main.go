@@ -27,7 +27,7 @@ func writeDb(ptsc chan *write.Point, donec chan bool) {
 	client := influxdb2.NewClientWithOptions(
 		os.Getenv("INFLUX_DB_HOST"),
 		os.Getenv("INFLUX_DB_TOCKEN"),
-		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Minute),
+		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Second),
 	)
 	// Ensures background processes finishes
 	defer client.Close()
