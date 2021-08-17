@@ -1,6 +1,7 @@
 package influx
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -18,12 +19,16 @@ func WriteDb(ptsc chan *write.Point, donec chan string) {
 		donec <- response
 	}()
 	// Create a new client using an InfluxDB server base URL and an authentication token
-	// and set batch size to 20
+	// and set batch size to 1000
 	client := influxdb2.NewClientWithOptions(
 		os.Getenv("INFLUX_DB_HOST"),
 		os.Getenv("INFLUX_DB_TOCKEN"),
 		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Second),
 	)
+	_, err := client.Health(context.Background())
+	if err != nil {
+		log.Panicf("%v\n", err)
+	}
 	// Ensures background processes finishes
 	defer client.Close()
 	// Get non-blocking write client
