@@ -9,4 +9,6 @@ services:
     ports:
       - "8086:8086"
     volumes: 
-      - /home/martin/influxdb/:/var/lib/influxdb2
+      - type: bind
+        source: "/home/martin/influxdb/"
+        target: "/var/lib/influxdb2"
