@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment: 
-      - INFLUX_DB_TOCKEN=<YOUR_TOCKEN_HERE>
+      - INFLUX_DB_TOCKEN=<YOUR_INFLUXDB_TOCKEN>
       - INFLUX_DB_HOST=http://open_data_tyrol_influxdb_1:8086
       - INFLUX_DB_ORG=influxdb
   influxdb:
@@ -14,5 +14,5 @@ services:
       - "8086:8086"
     volumes: 
       - type: bind
-        source: "/home/martin/influxdb/"
+        source: "<YOUR_LOCAL_DIRECOTRY>"
         target: "/var/lib/influxdb2"
