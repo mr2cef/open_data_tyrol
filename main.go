@@ -2,51 +2,21 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
+	"net/http"
 	"sync"
-	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/mr2cef/open_data_tyrol/influx"
 	"github.com/mr2cef/open_data_tyrol/sources/common"
 	"github.com/mr2cef/open_data_tyrol/sources/tirPeg"
 	"github.com/mr2cef/open_data_tyrol/sources/tirPrec"
 	"github.com/mr2cef/open_data_tyrol/sources/tirTemp"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
-func writeDb(ptsc chan *write.Point, donec chan bool) {
-	i := 0
-	defer func() {
-		fmt.Println("Done.", i, "points written.")
-		donec <- true
-	}()
-	// Create a new client using an InfluxDB server base URL and an authentication token
-	// and set batch size to 20
-	client := influxdb2.NewClientWithOptions(
-		os.Getenv("INFLUX_DB_HOST"),
-		os.Getenv("INFLUX_DB_TOCKEN"),
-		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Second),
-	)
-	// Ensures background processes finishes
-	defer client.Close()
-	// Get non-blocking write client
-	writeAPI := client.WriteAPI(
-		os.Getenv("INFLUX_DB_ORG"),
-		"open_data")
-	// Force all unwritten data to be sent
-	defer writeAPI.Flush()
-	for p := range ptsc {
-		writeAPI.WritePoint(p)
-		i++
-	}
-}
-
-func main() {
-
-	godotenv.Load(".env")
-
+func handleCollect(w http.ResponseWriter, r *http.Request) {
 	ptsc := make(chan *write.Point, 10000)
 	donec := make(chan bool)
 	defer func() {
@@ -59,8 +29,24 @@ func main() {
 		wg.Add(1)
 		go s.GetDataPts(ptsc, &wg)
 	}
-	go writeDb(ptsc, donec)
+	go influx.WriteDb(ptsc, donec)
 	wg.Wait()
 
 	close(ptsc)
+	fmt.Fprintf(w, "Sucessfully written.")
+}
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Wellcome.\n\nCurrently there are the following endpoints available:\n\n")
+	fmt.Fprintf(w, "/collect: Collect data points and write to InfluxDB.")
+}
+
+func main() {
+
+	godotenv.Load(".env")
+
+	http.HandleFunc("/collect", handleCollect)
+	http.HandleFunc("/", handleRoot)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
