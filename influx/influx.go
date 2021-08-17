@@ -1,6 +1,7 @@
 package influx
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -9,11 +10,12 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
-func WriteDb(ptsc chan *write.Point, donec chan bool) {
+func WriteDb(ptsc chan *write.Point, donec chan string) {
 	i := 0
 	defer func() {
-		log.Print("Done.", i, "points written.")
-		donec <- true
+		response := fmt.Sprintf("Done. %d points written.", i)
+		log.Println(response)
+		donec <- response
 	}()
 	// Create a new client using an InfluxDB server base URL and an authentication token
 	// and set batch size to 20

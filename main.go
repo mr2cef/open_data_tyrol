@@ -18,10 +18,7 @@ import (
 
 func handleCollect(w http.ResponseWriter, r *http.Request) {
 	ptsc := make(chan *write.Point, 10000)
-	donec := make(chan bool)
-	defer func() {
-		<-donec
-	}()
+	donec := make(chan string)
 	var wg sync.WaitGroup
 	sources := []common.Source{tirPeg.Source, tirPrec.Source, tirTemp.Source}
 
@@ -33,7 +30,7 @@ func handleCollect(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 
 	close(ptsc)
-	fmt.Fprintf(w, "Sucessfully written.")
+	fmt.Fprintf(w, <-donec)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {

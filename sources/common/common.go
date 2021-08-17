@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -39,19 +40,14 @@ func (s Source) GetDataPts(ptsc chan *write.Point, wg *sync.WaitGroup) {
 	}
 	df := qframe.ReadCSV(resp.Body, csv.Delimiter(s.Delimiter), csv.Types(s.Dtypes))
 	defer resp.Body.Close()
+	log.Printf("Downloaded %s containing %d data points.\n", s.Url, df.Len())
 	value := df.MustFloatView(s.ValCol)
-	datetime, err := df.StringView(s.TimeCol)
-	if err != nil {
-		// TODO
-	}
-	station, err := df.StringView(s.IdCol)
-	if err != nil {
-		// TODO
-	}
+	datetime := df.MustStringView(s.TimeCol)
+	station := df.MustStringView(s.IdCol)
 	for i := 0; i < df.Len(); i++ {
 		t, err := time.Parse(s.TimeFmt, *datetime.ItemAt(i))
 		if err != nil {
-			// TODO
+			log.Printf("%s; Cannot parse %s to fromat %s", err, s.TimeFmt, *datetime.ItemAt(i))
 		}
 		value := value.ItemAt(i)
 		if (value >= s.ValMin) && (value <= s.ValMax) {
