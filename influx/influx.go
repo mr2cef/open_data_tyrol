@@ -34,7 +34,7 @@ func WriteDb(ptsc chan *write.Point, donec chan string) {
 	// Get non-blocking write client
 	writeAPI := client.WriteAPI(
 		os.Getenv("INFLUX_DB_ORG"),
-		"open_data")
+		os.Getenv("INFLUX_DB_BUCKET"))
 	// Force all unwritten data to be sent
 	defer writeAPI.Flush()
 	for p := range ptsc {
