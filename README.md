@@ -19,9 +19,9 @@ $ docker run -p 8086:8086 \
       -v <YOUR_INFLUX_DB_DIR>:/var/lib/influxdb2 \
       influxdb:2.0
 ```
-Then go to http://127.0.0.1:8086. Set up user, password, organisation and initial bucket (We will not use this. Use a dummy name). When you are in the main menue. Create a new bucket (`Data>Buckets`) which we will then use to store the data in. Furthermore, under `Data>Tockens` you will find the access tocken for `I/O`. 
+Then go to http://127.0.0.1:8086. Set up user, password, organisation and initial bucket (We will not use this. Use a dummy name). When you are in the main menue. Create a new bucket (`Data>Buckets`) which we will then use to store the data in. Furthermore, under `Data>Tokens` you will find the access token for `I/O`. 
 
-For the next setup you need the `Tocken` (`<YOUR_INFLUX_DB_TOCKEN>`), `Bucket` (`<YOUR_INFLUX_DB_BUCKET>`) and the `Organisation` (`<YOUR_INFLUX_DB_ORG>`) you use.
+For the next setup you need the `Token` (`<YOUR_INFLUX_DB_TOKEN>`), `Bucket` (`<YOUR_INFLUX_DB_BUCKET>`) and the `Organisation` (`<YOUR_INFLUX_DB_ORG>`) you use.
 
 
 ### Get Going
