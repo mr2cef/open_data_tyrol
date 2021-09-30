@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/mr2cef/open_data_tyrol/influx"
+	"github.com/mr2cef/open_data_tyrol/mongo"
 	"github.com/mr2cef/open_data_tyrol/sources/common"
 	"github.com/mr2cef/open_data_tyrol/sources/tirPeg"
 	"github.com/mr2cef/open_data_tyrol/sources/tirPrec"
@@ -18,19 +19,23 @@ import (
 
 func handleCollect(w http.ResponseWriter, r *http.Request) {
 	ptsc := make(chan *write.Point, 10000)
-	donec := make(chan string)
+	mdonec, idonec := make(chan string), make(chan string)
+	stationc := make(chan map[string]string)
 	var wg sync.WaitGroup
 	sources := []common.Source{tirPeg.Source, tirPrec.Source, tirTemp.Source}
 
 	for _, s := range sources {
 		wg.Add(1)
-		go s.GetDataPts(ptsc, &wg)
+		go s.GetDataPts(ptsc, stationc, &wg)
 	}
-	go influx.WriteDb(ptsc, donec)
+	go influx.WriteDb(ptsc, idonec)
+	go mongo.WriteDB(stationc, mdonec)
 	wg.Wait()
 
 	close(ptsc)
-	fmt.Fprintf(w, <-donec)
+	close(stationc)
+	fmt.Fprintf(w, <-idonec)
+	fmt.Fprintf(w, <-mdonec)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {

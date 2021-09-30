@@ -27,6 +27,10 @@ var Source = common.Source{
 	ValCol:      "Wert",
 	ValMin:      -60.,
 	ValMax:      100.,
+	NameCol:     "Stationsname",
+	RightCol:    "Rechtswert",
+	HightCol:    "Hochwert",
+	StdCol:      "EPSG-Code",
 	TimeFmt:     "2006-01-02T15:04:05-0700",
 	TimeCol:     "Zeitstempel in ISO8601",
 }

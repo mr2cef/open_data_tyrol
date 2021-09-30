@@ -19,3 +19,12 @@ services:
         source: "<YOUR_INFLUX_DB_DIR>"
         target: "/var/lib/influxdb2"
     restart: always
+  mongodb:
+    image: mongo:4.4.6
+    volumes:
+      - type: bind
+        source: ">YOUR_MONGO_DB_DIR"
+        target: /data/db
+    ports:
+      - "27017:27017"
+    restart: always
