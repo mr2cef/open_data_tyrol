@@ -14,7 +14,7 @@ import (
 func WriteDb(ptsc chan *write.Point, donec chan string) {
 	i := 0
 	defer func() {
-		response := fmt.Sprintf("Done. %d points written.", i)
+		response := fmt.Sprintf("Done. %d points written.\n", i)
 		log.Println(response)
 		donec <- response
 	}()
