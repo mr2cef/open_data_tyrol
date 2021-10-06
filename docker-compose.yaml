@@ -9,6 +9,9 @@ services:
       - INFLUX_DB_HOST=http://open_data_tyrol_influxdb_1:8086
       - INFLUX_DB_ORG=<YOUR_INFLUX_DB_ORG_NAME>
       - INFLUX_DB_BUCKET=<YOUR_INFLUX_DB_BUCKET_NAME>
+      - MONGO_DB_HOST=mongodb://127.0.0.1:27017
+      - MONGO_DB_DB=<YOUR_MONGO_DB_DATABASE>
+      - MONGO_DB_COLLECTION=<YOUR_MONGO_DB_COLLECTION>
     restart: always
   influxdb:
     image: "influxdb:2.0"
@@ -23,7 +26,7 @@ services:
     image: mongo:4.4.6
     volumes:
       - type: bind
-        source: ">YOUR_MONGO_DB_DIR"
+        source: "<YOUR_MONGO_DB_DIR>"
         target: /data/db
     ports:
       - "27017:27017"

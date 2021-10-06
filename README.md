@@ -23,6 +23,9 @@ Then go to http://127.0.0.1:8086. Set up user, password, organisation and initia
 
 For the next setup you need the `Token` (`<YOUR_INFLUX_DB_TOKEN>`), `Bucket` (`<YOUR_INFLUX_DB_BUCKET>`) and the `Organisation` (`<YOUR_INFLUX_DB_ORG>`) you use.
 
+### Set up MongoDB
+Create a direcotry for persisting your mongo data. in the sequel I will refer to it as `<YOUR_MONGO_DB_DIR>`. Create then a mongo database (`MONGO_DB_DB`) and collection (`MONGO_DB_COLLECTION`). Add this to your `docker-compose.yaml.
+
 
 ### Get Going
 Get the repo at
