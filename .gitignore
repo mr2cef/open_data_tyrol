@@ -16,3 +16,12 @@
 
 # environment variables
 .env
+
+# python venv
+venv/
+
+# python_cach
+__pycache__
+
+# .vscode/
+.vscode/

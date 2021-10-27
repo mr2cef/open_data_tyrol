@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment: 
-      - INFLUX_DB_TOCKEN=<YOUR_INFLUX_DB_TOKEN>
+      - INFLUX_DB_TOKEN=<YOUR_INFLUX_DB_TOKEN>
       - INFLUX_DB_HOST=http://open_data_tyrol_influxdb_1:8086
       - INFLUX_DB_ORG=<YOUR_INFLUX_DB_ORG_NAME>
       - INFLUX_DB_BUCKET=<YOUR_INFLUX_DB_BUCKET_NAME>

@@ -75,6 +75,7 @@ func (s Source) GetDataPts(ptsc chan *write.Point, stationc chan map[string]stri
 			m := map[string]string{
 				"_id":    id,
 				"name":   *name.ItemAt(i),
+				"measurement": s.Measurement,
 				"right":  fmt.Sprintf("%f", rightVal.ItemAt(i)),
 				"high":   fmt.Sprintf("%f", highVal.ItemAt(i)),
 				"format": *std.ItemAt(i),

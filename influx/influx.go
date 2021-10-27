@@ -22,7 +22,7 @@ func WriteDb(ptsc chan *write.Point, donec chan string) {
 	// and set batch size to 1000
 	client := influxdb2.NewClientWithOptions(
 		os.Getenv("INFLUX_DB_HOST"),
-		os.Getenv("INFLUX_DB_TOCKEN"),
+		os.Getenv("INFLUX_DB_TOKEN"),
 		influxdb2.DefaultOptions().SetBatchSize(1000).SetPrecision(time.Second),
 	)
 	_, err := client.Health(context.Background())
