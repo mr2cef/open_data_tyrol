@@ -7,12 +7,12 @@ import (
 	"sync"
 
 	"github.com/joho/godotenv"
-	"github.com/mr2cef/open_data_tyrol/influx"
-	"github.com/mr2cef/open_data_tyrol/mongo"
-	"github.com/mr2cef/open_data_tyrol/sources/common"
-	"github.com/mr2cef/open_data_tyrol/sources/tirPeg"
-	"github.com/mr2cef/open_data_tyrol/sources/tirPrec"
-	"github.com/mr2cef/open_data_tyrol/sources/tirTemp"
+	"github.com/mr2cef/open_data_tyrol/collector/influx"
+	"github.com/mr2cef/open_data_tyrol/collector/mongo"
+	"github.com/mr2cef/open_data_tyrol/collector/sources/common"
+	"github.com/mr2cef/open_data_tyrol/collector/sources/tirPeg"
+	"github.com/mr2cef/open_data_tyrol/collector/sources/tirPrec"
+	"github.com/mr2cef/open_data_tyrol/collector/sources/tirTemp"
 
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
@@ -45,7 +45,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	godotenv.Load(".env")
+	godotenv.Load("../.env")
 
 	http.HandleFunc("/collect", handleCollect)
 	http.HandleFunc("/", handleRoot)

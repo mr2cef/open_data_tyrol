@@ -1,6 +1,6 @@
 package tirPrec
 
-import "github.com/mr2cef/open_data_tyrol/sources/common"
+import "github.com/mr2cef/open_data_tyrol/collector/sources/common"
 
 var precDTypes = map[string]string{
 	"Stationsname":           "string",

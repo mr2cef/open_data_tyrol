@@ -23,9 +23,13 @@ func isInList(val string, slice []string) (int, bool) {
 }
 
 func mongoGetColletion() *mongo.Collection {
+	credential := options.Credential{
+		Username: os.Getenv("MONGO_DB_USER"),
+		Password: os.Getenv("MONGO_DB_PASSWORD"),
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_DB_HOST")))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_DB_HOST")).SetAuth(credential))
 	if err != nil {
 		log.Println(err)
 	}

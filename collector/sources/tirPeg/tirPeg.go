@@ -1,7 +1,7 @@
 package tirPeg
 
 import (
-	"github.com/mr2cef/open_data_tyrol/sources/common"
+	"github.com/mr2cef/open_data_tyrol/collector/sources/common"
 )
 
 var pegelDTypes = map[string]string{

@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   collect:
-    build: .
+    build: ./collector/Dockerfile
     ports:
       - "8080:8080"
     environment: 
@@ -12,6 +12,8 @@ services:
       - MONGO_DB_HOST=mongodb://127.0.0.1:27017
       - MONGO_DB_DB=<YOUR_MONGO_DB_DATABASE>
       - MONGO_DB_COLLECTION=<YOUR_MONGO_DB_COLLECTION>
+      - MONGO_DB_USER=<YOUR_MONGO_DB_USER>
+      - MONGO_DB_PASSWORD=<YOUR_MONGO_DB_PASSWORD>
     restart: always
   influxdb:
     image: "influxdb:2.0"
@@ -31,3 +33,6 @@ services:
     ports:
       - "27017:27017"
     restart: always
+    environments: 
+      - MONGO_INITDB_ROOT_USERNAME=<YOUR_MONGO_DB_USER>
+      - MONGO_INITDB_ROOT_PASSWORD=<YOUR_MONGO_DB_PASSWORD>
