@@ -29,12 +29,13 @@ func mongoGetColletion() *mongo.Collection {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_DB_HOST")).SetAuth(credential))
+	cl := options.Client().ApplyURI(os.Getenv("MONGO_DB_HOST")).SetAuth(credential)
+	client, err := mongo.Connect(ctx, cl)
 	if err != nil {
 		log.Println(err)
 	}
 
-	ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err = client.Ping(ctx, readpref.Primary()); err != nil {
 		panic(err)
