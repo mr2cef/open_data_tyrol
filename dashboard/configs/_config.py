@@ -13,7 +13,7 @@ config = {
         bucket=os.getenv("INFLUX_DB_BUCKET")
     ),
     "mongo": dict(
-        host= os.getenv("MONGO_DB_HOST"),
+        host= f"""mongodb://{os.getenv("MONGO_DB_USER")}:{os.getenv("MONGO_DB_PASSWORD")}@{os.getenv("MONGO_DB_HOST").split('//')[-1]}""",
         database=os.getenv("MONGO_DB_DB"),
         collection=os.getenv("MONGO_DB_COLLECTION")
     ),
